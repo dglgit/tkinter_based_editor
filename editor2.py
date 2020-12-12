@@ -171,7 +171,7 @@ class TextEditor:
     self.txtarea.bind("<Control-c>",self.copy)
     self.txtarea.bind("<Control-v>",self.paste)
     self.txtarea.bind("<Control-z>",self.undo)
-    #im gae
+    #if the world of mc is infinite than how can the sun revolve around it
 
 root = Tk()
 TextEditor(root)
