@@ -23,6 +23,7 @@ class first:
         self.resize_button=tk.Button(self.root,text='apply',command=lambda: self.resize(self.new_shape.get()))
         self.resize_button.pack(side=tk.LEFT)
         self.has_console=False
+
     def log(self,thing):
         if not self.has_console:
             print('go')
@@ -33,23 +34,30 @@ class first:
             self.has_console=True
             self.clear_console=tk.Button(text='clear_console',command=lambda: self.clear_console())
             self.clear_console.pack(side=tk.BOTTOM)
+            
         else:
             self.console.config(text=str(thing))
+
     def clear_console(self):
         self.console.forget()
         self.has_console=False
+
     def get_files(self,path):
         return list(os.listdir(path))
+
     def display_file(self,path):
         self.main_field.insert(1.0,get_whole_file(path))
         #self.log(self.main_field.get(1.0,tk.END))
         self.path=path
+
     def save(self):
         with open(self.path,'w') as f:
             f.write(self.main_field.get(1.0,tk.END))
+
     def resize(self,new):
         width,height=new.split(',')
         self.main_field.config(width=int(width),height=int(height))
+
     def run(self):
         try:
             exec(self.main_field.get(1.0,tk.END).replace('print','self.log'))
