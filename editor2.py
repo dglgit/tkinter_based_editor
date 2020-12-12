@@ -171,6 +171,7 @@ class TextEditor:
     self.txtarea.bind("<Control-c>",self.copy)
     self.txtarea.bind("<Control-v>",self.paste)
     self.txtarea.bind("<Control-z>",self.undo)
+    #im gae
 
 root = Tk()
 TextEditor(root)
