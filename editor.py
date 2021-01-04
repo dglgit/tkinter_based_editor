@@ -10,7 +10,10 @@ class fkeypress:
 def get_whole_file(path):
     return ''.join(list(open(path,'r')))
 def get_spaces(line):
-    return line.count(' ')
+    count=0
+    while line[count]==' ':
+        count+=1
+    return count
 def rsearch(s,target):
     idxs=[]
     start=0
@@ -161,28 +164,28 @@ class first:
         print('return')
         self.cpos=self.main_field.index(tk.INSERT)
         row,col=to_num(self.cpos.split('.'))
-        self.acum_spaces=self.main_field.get(f'{row}.0',f'{row}.end').count(' ')
+        self.acum_spaces=get_spaces(self.main_field.get(f'{row}.0',f'{row}.end'))
         print(self.main_field.index(tk.INSERT),self.acum_spaces,'acum')
         self.main_field.insert(self.cpos,' ')
         if 'def ' in self.main_field.get(f'{row}.0',f'{row}.end'):
+            print('if',self.acum_spaces,self.tab_amount)
             if len(self.main_field.get(f'{row+1}.0'))==0:
                 #self.press(fkeypress('shift',''))
                 print('no new line')
-                self.indent_no_line(1,1)
                 self.next_indent=' '*self.tab_amount+' '*self.acum_spaces
             print('inserting',f'{row+1}.0',self.main_field.get(f'{row+1}.0'))
-            self.main_field.insert(f'{row+1}.0','g')#,' '*self.tab_amount+' '*self.acum_spaces)
+            #self.main_field.insert(f'{row+1}.0','g')#,' '*self.tab_amount+' '*self.acum_spaces)
         elif 'return ' in self.main_field.get(f'{row}.0',f'{row}.end'):
-            print('2elif')
+            print('2elif',self.acum_spaces,self.tab_amount)
             if len(self.main_field.get(f'{row+1}.0'))==0:
                 #self.press(fkeypress('shift',''))
                 print('no new line')
                 self.indent_no_line(1,1)
                 self.next_indent=' '*relu(self.acum_spaces-self.tab_amount)
             else:
-                self.main_field.insert(self.cpos,' '*relu(self.acum_spaces-self.tab_amount))
+                self.main_field.insert(f'{int(row)+1}.0',' '*relu(self.acum_spaces-self.tab_amount))
         else:
-            print('else')
+            print('else',self.acum_spaces,self.tab_amount)
             if len(self.main_field.get(f'{row+1}.0'))==0:
                 #self.press(fkeypress('shift',''))
                 print('no new line')
@@ -200,7 +203,7 @@ class first:
         row,col=to_num(self.cpos.split('.'))
         curr_line=self.main_field.get(f'{row}.{col}',f'{row}.end')
         whole_line=self.main_field.get(f'{row}.0',f'{row}.end')
-        self.highlight2()
+        self.highlight()
         if hasattr(self,'next_indent'):
             self.main_field.insert(f'{row}.{col}',self.next_indent)
             del self.next_indent
@@ -225,7 +228,7 @@ class first:
         if e.char=="'" or e.char=='"':
             print('quote',self.get_line(row),self.main_field.get('1.0',tk.END),self.main_field.get('1.0',tk.END).split('\n'))
             print("'" in self.get_line(row))
-            #self.quote_highlight(self.get_line(row))
+            self.highlight()
             '''
             print(string.printable)
             char_idxs=search(whole_line,e.char)
@@ -259,16 +262,14 @@ class first:
         else:
             stop=line_num
             start=line_num-1
-        print(lines,'gsdggf')
+        #print(lines,'gsdggf')
         for i in range(start,stop):
             curr_idx=0
             line=self.main_field.get(f'{i}.{0}',f'{i}.end')
-            print(line)
+            #print(line)
             #print(line)
             for kw in self.kws:
-                if kw=='def':
-                    print('oh no')
-                idxs=search(line,kw)
+                idxs=rsearch(line,kw)
                 #print(idxs)
                 for j in idxs:
                     self.main_field.tag_configure('thing',foreground='red')
@@ -279,18 +280,26 @@ class first:
                 self.main_field.tag_configure('func',foreground='blue')
                 self.main_field.tag_add('func',f'{i}.{start}',f'{i}.{stop}')
             for syn in ('""',"'"):
-                idxs=search(line,syn)
+                idxs=rsearch(line,syn)
                 if idxs:
                     self.main_field.tag_configure('string',foreground='green')
+                    #print(idxs,'idxs')
                     if len(idxs)>1:
                         for ii in range(0,len(idxs),2):
-                            print(idxs,idxs[ii],idxs[ii+1])
-                            self.main_field.tag_add('string',f'{i}.{idxs[ii]}',f'{i}.{idxs[ii+1]+1}')
+                            try:
+                                print(idxs,idxs[ii],idxs[ii+1])
+                                self.main_field.tag_add('string',f'{i}.{idxs[ii]}',f'{i}.{idxs[ii+1]+1}')
+                            except IndexError:
+                                self.main_field.tag_add('string',f'{i}.{idxs[ii]}',f'{i}.end')
                     else:
                         self.main_field.tag_add('string',f'{i}.{idxs[0]}',f'{i}.end')
+            if '#' in line:
+                self.main_field.tag_configure('comment',foreground='purple')
+                comment_idx=line.index('#')
+                self.main_field.tag_add('comment',f'{i}.{comment_idx}',f'{i}.end')
         
     def quote_highlight(self,line,qtype):
-        idxs=search(line,qtype)
+        idxs=rsearch(line,qtype)
         if not idxs:
             self.main_field.insert()
             self.main_field.tag_configure('string',foreground='green')
