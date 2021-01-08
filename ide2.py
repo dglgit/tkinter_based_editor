@@ -1,9 +1,9 @@
 import tkinter as tk
+from tkinter import *
 import os
 import keyword
 import string
 import time
-from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
 
@@ -11,7 +11,6 @@ class fkeypress:
     def __init__(self,ks):
         self.keysym=ks
         self.char=char
-
 def get_whole_file(path):
     return ''.join(list(open(path,'r')))
 def get_spaces(line):
@@ -64,44 +63,6 @@ class tab:
 class first:
     def __init__(self,root):
         self.root=root
-        self.root.title("IDE")
-        self.filename = None
-        self.title = StringVar()
-        self.status = StringVar()
-
-        self.titlebar = Label(self.root,textvariable=self.title,font=("times new roman",15,"bold"),bd=2,relief=GROOVE)
-        self.titlebar.grid()
-        self.settitle()
-
-        self.statusbar = Label(self.root,textvariable=self.status,font=("times new roman",15),bd=2,relief=GROOVE)
-        self.statusbar.grid(row=7)
-        self.status.set("dglgit")
-
-        #Initializing Menu Bar
-        self.menubar = Menu(self.root,font=("times new roman",15,"bold"),activebackground="skyblue")
-        #Configures onto the root window
-        self.root.config(menu=self.menubar)
-
-        #FileMenu on the Menu Bar
-        self.filemenu = Menu(self.menubar,font=("times new roman",12,"bold"),activebackground="skyblue",tearoff=0)
-        self.filemenu.add_command(label="New",accelerator="Ctrl+N",command=self.newfile)    
-        self.filemenu.add_command(label="Open",accelerator="Ctrl+O",command=self.openfile)
-        self.filemenu.add_command(label="Save",accelerator="Ctrl+S",command=self.save)
-        self.filemenu.add_command(label="Save As",accelerator="Ctrl+A",command=self.saveasfile)
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label="Exit",accelerator="Ctrl+E",command=self.exitfile)
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
-
-        #ScrollWheel When needed and also some helper code with txtarea
-        scrol_y = Scrollbar(self.root,orient=VERTICAL)
-        self.txtarea = Text(self.root,yscrollcommand=scrol_y.set,font=("times new roman",15,"bold"),state="normal",relief=GROOVE)
-        # scrol_y.grid(side=RIGHT,fill=Y)
-        # scrol_y.config(command=self.txtarea.yview)
-        # self.txtarea.grid(fill=BOTH,expand=1)
-
-        #Run Some Keyboard Shortcuts like copy, paste, and print
-        self.shortcuts()
-
         self.label=tk.Label(self.root,text='')
         #self.label.grid(column=0)
         self.path_box=tk.Entry(self.root)
@@ -138,6 +99,78 @@ class first:
         #self.begining_height=self.root.winfo.screenheight()
         #self.beginning_width=self.root.winfo.screenwidth()
         #self.root.bind("<Configure>", self.handle_config)
+
+        self.title = StringVar()
+        self.status = StringVar()
+        self.filename = None
+
+
+        self.titlebar = Label(self.root,textvariable=self.title,font=("times new roman",15,"bold"),bd=2,relief=GROOVE)
+        self.titlebar.grid(row=2)
+        self.settitle()
+
+        self.statusbar = Label(self.root,textvariable=self.status,font=("times new roman",15),bd=2,relief=GROOVE)
+        self.statusbar.grid(row=6)
+        self.status.set("IDE")
+
+        self.menubar = Menu(self.root,font=("times new roman",15,"bold"),activebackground="skyblue")
+        self.root.config(menu = self.menubar)
+
+        self.filemenu = Menu(self.menubar,font=("times new roman",12,"bold"),activebackground="skyblue",tearoff=0)
+        self.filemenu.add_command(label="New",accelerator="Ctrl+N",command=self.newfile)
+        self.filemenu.add_command(label="Open",accelerator="Ctrl+O",command=self.openfile)
+        self.filemenu.add_command(label="Save",accelerator="Ctrl+S",command=self.savefile)
+        self.filemenu.add_command(label="Save As",accelerator="Ctrl+A",command=self.saveasfile)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Exit",accelerator="Ctrl+E",command=self.exitfile)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+
+
+
+    def settitle(self):
+        if self.filename:
+            self.title.set(self.filename)
+        else:
+            self.title.set("Open file/or start typing and save as")
+    def newfile(self):
+        self.main_field.delete("1.0",END)
+        self.filename = None
+        self.settitle()
+        self.status.set("New File Created")
+    def openfile(self):
+        try:
+            self.filename = filedialog.askopenfilename(title = "Select file",filetypes = (("All Files","*.*"),("Text Files","*.txt"),("Python Files","*.py")))
+            if self.filename:
+                infile = open(self.filename,"r")
+                self.main_field.delete("1.0",END)
+            for line in infile:
+                self.main_field.insert(END,line)
+                infile.close()
+                self.settitle()
+                self.status.set("Opened Successfully")
+        except Exception as e:
+            messagebox.showerror("Exception",e)
+    def saveasfile(self):
+        try:
+            if self.filename:
+                data = self.main_field.get("1.0",END)
+                outfile = open(self.filename,"w")
+                outfile.write(data)
+                outfile.close()
+                self.settitle()
+                self.status.set("Saved Successfully!")
+            else:
+                self.saveasfile()
+        except Exception as e:
+            messagebox.showerror("Exception",e)
+    def exitfile(self):
+        op = messagebox.askyesno("WARNING","Your Unsaved Data May be Lost!!")
+        if op>0:
+            self.root.destroy()
+        else:
+            return  
+
+
     def log(self,thing):
         if not self.has_console:
             print('go')
@@ -174,10 +207,10 @@ class first:
                 self.main_field.insert(1.0,get_whole_file(path))
             except Exception as e:
                 print(e)
-    def save(self):
+    def savefile(self):
         try:
             if self.filename:
-                data = self.txtarea.get("1.0",END)
+                data = self.main_field.get("1.0",END)
                 outfile = open(self.filename,"w")
                 outfile.write(data)
                 outfile.close()
@@ -187,7 +220,6 @@ class first:
                 self.saveasfile()
         except Exception as e:
             messagebox.showerror("Exception",e)
-
     def resize(self,new):
         width,height=new.split(',')
         self.main_field.config(width=int(width),height=int(height))
@@ -273,6 +305,7 @@ class first:
                 pass
         else:
             self.just_written=''
+
         print(self.just_written)
         self.acum_spaces=self.main_field.get(f'{row}.0',f'{row}.end').count(' ')
         print(e.keysym,'keysym, ',self.cpos,'cpos')
@@ -374,59 +407,7 @@ class first:
             self.main_field.tag_configure('def',foreground='yellow')
             self.main_field.tag_add('def',self.scpos,self.cpos)
             
-
-
-
-    # Components of the MenuBar Including the File and Edit Menu
-    def settitle(self):
-        if self.filename:
-            self.title.set(self.filename)
-        else:
-            self.title.set("Open file/or start typing and save as")
-    def newfile(self, *args):
-        self.txtarea.delete("1.0", END)
-        self.filename = None
-        self.settitle()
-        self.status.set("New File Made")
-    def openfile(self, *args):
-        try:
-            self.filename = filedialog.askopenfilename(title = "Select file",filetypes = (("All Files","*.*"),("Text Files","*.txt"),("Python Files","*.py")))
-            if self.filename:
-                infile = open(self.filename,"r")
-                self.txtarea.delete("1.0",END)
-                for line in infile:
-                    self.txtarea.insert(END,line)
-                    infile.close()
-                    self.settitle()
-                    self.status.set("Opened Successfully")
-        except Exception as e:
-            messagebox.showerror("Exception",e)
-           
-    def saveasfile(self, *args):
-        try:
-            untitledfile = filedialog.asksaveasfilename(title = "Save file As",defaultextension=".txt",initialfile = "Untitled.txt",filetypes = (("All Files","*.*"),("Text Files","*.txt"),("Python Files","*.py")))
-            data = self.txtarea.get("1.0",END)
-            outfile = open(untitledfile,"w")
-            outfile.write(data)
-            outfile.close()
-            self.filename = untitledfile
-            self.settitle()
-            self.status.set("Saved Successfully")
-        except Exception as e:
-            messagebox.showerror("Exception",e) 
-    def exitfile(self,*args):
-        op = messagebox.askyesno("WARNING","Your Unsaved Data May be Lost!!")
-        if op>0:
-            self.root.destroy()
-        else:
-            return
-    def shortcuts(self):
-        self.txtarea.bind("<Control-n>",self.newfile)
-        self.txtarea.bind("<Control-o>",self.openfile)
-        self.txtarea.bind("<Control-s>",self.save)
-        self.txtarea.bind("<Control-a>",self.saveasfile)
-        self.txtarea.bind("<Control-e>",self.exitfile)
-    
+            
 master=tk.Tk()
 gui=first(master)
 master.mainloop()
